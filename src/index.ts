@@ -9,21 +9,88 @@ const startServer = async () => {
 
   const typeDefs = gql`
     type Query {
-      boards: [Board]
+      users: [User]
     }
 
-    type Board {
+    type User {
       id: ID!
-      title: String!
-      description: String
-      path: String!
+      email: String
+      country_code: String
+      phone: String
+      version: Int
+      role: String
+      bio: String
+      master: Master
+    }
+
+    type Master {
+      id: ID!
+      first_name: String
+      last_name: String
+      avatar: String
+      language: Language
+      city: City
+      work_at_master: Boolean
+      work_at_customer: Boolean
+      work_with_women: Boolean
+      work_with_men: Boolean
+      profile_url: String
+      user: User
+    }
+
+    type Language {
+      id: ID
+      key: String
+      name: String
+      name_ua: String
+      name_ru: String
+      name_pl: String
+      flag_url: String
+    }
+
+    type City {
+      id: ID!
+      country: Country
+      name: String
+      name_ua: String
+      name_ru: String
+      name_pl: String
+      coord: Float
+      flag_url: String
+    }
+
+    type Country {
+      id: ID!
+      name: String
+      name_ua: String
+      name_ru: String
+      name_pl: String
+      flag_url: String
     }
   `;
 
   const resolvers = {
     Query: {
-      boards: () => {
-        return prisma.board.findMany()
+      users: () => {
+        return prisma.user.findMany({
+          where: {
+            email: {
+              contains: 'markos',
+            }
+          },
+          include: {
+            master: {
+              include: {
+                language: true,
+                city: {
+                  include: {
+                    country: true
+                  }
+                }
+              }
+            },
+          },
+        })
       }
     },
   };
