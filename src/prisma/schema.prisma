@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  @@map("users")
+  id              Int       @id @default(autoincrement())
+  email           String    @db.VarChar(40) @unique
+  password        String    @db.VarChar(200)
+  country_code    String?   @db.VarChar(2)
+  phone           String    @db.VarChar(25) @unique
+  version         Int?      @default(0)
+  role            String?   @db.VarChar(20)
+  bio             String?   @db.VarChar(400)
+  sms_code        Int?
+  sms_code_valid  Boolean?  @default(false)
+  master          Master?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model Master {
+  @@map("masters")
+  id                Int       @id @default(autoincrement())
+  first_name        String?   @db.VarChar(40)
+  last_name         String?   @db.VarChar(40)
+  avatar            String?   @db.VarChar(200)
+  language_id       Int?
+  language          Language? @relation(fields: [language_id], references: [id])
+  user_id           Int       @unique
+  user              User      @relation(fields: [user_id], references: [id])
+  city_id           Int?
+  city              City?     @relation(fields: [city_id], references: [id])
+  work_at_master    Boolean?
+  work_at_customer  Boolean?
+  work_with_women   Boolean?  @default(false)
+  work_with_men     Boolean?  @default(false)
+  profile_url       String?   @db.VarChar(200) @unique
+  created_at        DateTime? @default(now())
+  updated_at        DateTime? @updatedAt
+}
+
+model Language {
+  @@map("languages")
+  id          Int       @id @default(autoincrement())
+  key         String?   @db.VarChar(5)
+  name        String    @db.VarChar(100)
+  name_ua     String?   @db.VarChar(100)
+  name_ru     String?   @db.VarChar(100)
+  name_pl     String?   @db.VarChar(100)
+  flag_url    String?   @db.VarChar(200)
+  masters     Master[]
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+}
+
+model Country {
+  @@map("countries")
+  id          Int       @id @default(autoincrement())
+  cities      City[]
+  name        String?   @db.VarChar(100)
+  name_ua     String?   @db.VarChar(100)
+  name_ru     String?   @db.VarChar(100)
+  name_pl     String?   @db.VarChar(100)
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+}
+
+model City {
+  @@map("cities")
+  id          Int       @id @default(autoincrement())
+  country_id  Int
+  country     Country   @relation(fields: [country_id], references: [id])
+  name        String?   @db.VarChar(100)
+  name_ua     String?   @db.VarChar(100)
+  name_ru     String?   @db.VarChar(100)
+  name_pl     String?   @db.VarChar(100)
+  coord       Float?
+  masters     Master[]
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
+}
